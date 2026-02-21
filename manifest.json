@@ -2,6 +2,13 @@
   "short_name": "دليل A-Plus",
   "name": "دليل نظام A-Plus المحاسبي",
   "description": "دليل شامل لفيديوهات شرح نظام A-Plus المحاسبي",
+  "start_url": "index.html",
+  "scope": "/",
+  "display": "standalone",
+  "theme_color": "#0f766e",
+  "background_color": "#f7f7f7",
+  "dir": "rtl",
+  "lang": "ar",
   "icons": [
     {
       "src": "logo.png",
@@ -13,11 +20,5 @@
       "type": "image/png",
       "sizes": "512x512"
     }
-  ],
-  "start_url": ".",
-  "display": "standalone",
-  "theme_color": "#0f766e",
-  "background_color": "#f7f7f7",
-  "dir": "rtl",
-  "lang": "ar"
+  ]
 }

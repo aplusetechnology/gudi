@@ -1,44 +1,49 @@
 const cacheName = 'aplus-guide-v1';
+
 const staticAssets = [
-  './',
-  './index.html'
+  '/',
+  '/index.html',
+  '/manifest.json',
+  '/logo.png',
+  '/document.pdf'
 ];
 
-self.addEventListener('install', async e => {
-  const cache = await caches.open(cacheName);
-  await cache.addAll(staticAssets);
-  return self.skipWaiting();
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(cacheName).then(cache => {
+      return cache.addAll(staticAssets);
+    })
+  );
+  self.skipWaiting();
 });
 
-self.addEventListener('activate', e => {
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(keys => {
+      return Promise.all(
+        keys.filter(key => key !== cacheName)
+            .map(key => caches.delete(key))
+      );
+    })
+  );
   self.clients.claim();
 });
 
-self.addEventListener('fetch', async e => {
-  const req = e.request;
-  const url = new URL(req.url);
+self.addEventListener('fetch', event => {
+  const request = event.request;
 
-  if (url.origin === location.origin) {
-    e.respondWith(cacheFirst(req));
-  } else {
-    e.respondWith(networkAndCache(req));
-  }
+  if (request.method !== 'GET') return;
+
+  event.respondWith(
+    caches.match(request).then(cachedResponse => {
+      return cachedResponse || fetch(request).then(networkResponse => {
+        return caches.open(cacheName).then(cache => {
+          cache.put(request, networkResponse.clone());
+          return networkResponse;
+        });
+      }).catch(() => {
+        return cachedResponse;
+      });
+    })
+  );
 });
-
-async function cacheFirst(req) {
-  const cache = await caches.open(cacheName);
-  const cached = await cache.match(req);
-  return cached || fetch(req);
-}
-
-async function networkAndCache(req) {
-  const cache = await caches.open(cacheName);
-  try {
-    const fresh = await fetch(req);
-    await cache.put(req, fresh.clone());
-    return fresh;
-  } catch (e) {
-    const cached = await cache.match(req);
-    return cached;
-  }
-}
